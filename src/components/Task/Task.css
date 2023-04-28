@@ -1,0 +1,44 @@
+.Task {
+    position: relative;
+    display: inline-block;
+    border-style: double;
+    border-width: 5px;
+    border-radius: 10%;
+    border-color: orange;
+    background-color: green;
+    padding: 20px;
+    font-family: "Georgia", Times, serif;
+    margin-top: 10px;
+  }
+  #id {
+    border-radius: 40%;
+    position: absolute;
+    display: inline-block;
+    top: 0;
+    left: 0;
+    text-align: center;
+    color: blue;
+    background-color: gold;
+  }
+
+  #delete {
+    border-radius: 40%;
+    position: absolute;
+    display: inline-block;
+    top: 0;
+    right: 0;
+    text-align: center;
+    color: white;
+    background-color: red;
+  }
+
+  #delete:hover {
+    color:gold
+  }
+  
+  
+  h3 {
+    color: white;
+    text-align: center;
+    font-weight: 700;
+  }

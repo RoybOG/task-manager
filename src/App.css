@@ -1,0 +1,18 @@
+.App {
+  text-align: center;
+}
+
+
+
+#createTask {
+  color: white;
+  background-color: green;
+  border-radius: 40%;
+  border-color: gold;
+  margin-left: 350px;
+  /* float: right; */
+}
+
+#createTask:hover {
+  color:gold
+}
