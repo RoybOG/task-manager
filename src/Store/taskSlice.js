@@ -30,6 +30,7 @@ const taskSlice = createSlice({
             // console.log('updating ')
             // console.dir(action)
             const taskInfo = action.payload
+            if(taskInfo.text.length === 0) taskInfo.text = '_'; //This will prevent an unaccebile empty task
             state[taskInfo.id].text = taskInfo.text
         },
         deleteTask: (state,action)=>{

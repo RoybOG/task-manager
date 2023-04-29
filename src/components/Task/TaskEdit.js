@@ -19,7 +19,7 @@ export default function TaskEdit(Task_props) {
   }
   // console.log(task_text)
   
-useEffect(()=>{set_task_text(Task_props.text || '')},[Task_props])
+ useEffect(()=>{set_task_text(Task_props.text || '')},[Task_props])
 
   return (
       <input

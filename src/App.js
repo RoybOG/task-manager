@@ -8,10 +8,12 @@ import { SelectAllTasks } from "./Store/taskSelectors";
 import { useDispatch, useSelector } from "react-redux";
 import { addEmptyTask } from "./Store/taskSlice";
 
+const shortid = require('shortid')
+
 function App() {
-  const tasks = useSelector(SelectAllTasks)
-  // console.log("tasks")
-  // console.log(tasks)
+  const store_tasks = useSelector(SelectAllTasks)
+
+
   const dispatch = useDispatch()
   const handleCreate = ()=>{
     dispatch(addEmptyTask())
@@ -21,8 +23,8 @@ function App() {
       
       <h1>Manage Tasks</h1>
       <button id='createTask' onClick={handleCreate}>+</button>
-      {tasks.map((task_info, key) => (
-        <React.Fragment key={key}>
+      {store_tasks.map((task_info, key) => (
+        <React.Fragment key={shortid.generate()}>
           <br></br>
           <Task  id={key} {...task_info} />
         </React.Fragment>
