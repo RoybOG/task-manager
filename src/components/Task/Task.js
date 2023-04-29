@@ -4,50 +4,44 @@ import TaskEdit from "./TaskEdit";
 import { useDispatch } from "react-redux";
 import { UpdateTask, deleteTask } from "../../Store/taskSlice";
 
-
 export default function Task(Task_props) {
   // console.log('%c' + JSON.stringify(Task_props), 'color: greem')
-  // 
-  const [CanEdit, SetEditing] = useState(false)
-  const dispatch = useDispatch()
-  const handleSubmit = (userText)=>{
+  //
+  // console.dir(Task_props);
+  const [CanEdit, SetEditing] = useState(false);
+  const dispatch = useDispatch();
+  const handleSubmit = (userText) => {
     // console.log('Submitted ' + userText)
-    SetEditing(false)
-    dispatch(UpdateTask({...Task_props, text:userText}))
-  }
+    SetEditing(false);
+    dispatch(UpdateTask({ ...Task_props, text: userText }));
+  };
 
-  const handleTextClick = ()=>{
-    
-    SetEditing(true)
-  }
+  const handleTextClick = () => {
+    SetEditing(true);
+  };
 
-  const handleDelete = ()=>{
-    dispatch(deleteTask(Task_props.id))
-  }
+  const handleDelete = () => {
+    dispatch(deleteTask(Task_props.index));
+  };
 
-  useEffect(
-    ()=>{
-      if (!Task_props.text) {
-        
-        SetEditing(true);
-      }
-      console.log(CanEdit);
-      }
-         ,[]
-      )
-  
-  
-
+  useEffect(() => {
+    if (!Task_props.text) {
+      SetEditing(true);
+    }
+    // console.log(CanEdit);
+  }, []);
 
   return (
     <div className="Task">
-      <h6 id="id">{Task_props.id + 1}</h6>
-      <h6 id="delete" onClick={handleDelete}>X</h6>
-      {CanEdit? 
-      (<TaskEdit handleSubmit={handleSubmit} {...Task_props}/>)
-      :
-      (<h3 onClick={handleTextClick}>{Task_props.text}</h3>)
-      }
+      <h6 id="id">{Task_props.index + 1}</h6>
+      <h6 id="delete" onClick={handleDelete}>
+        X
+      </h6>
+      {CanEdit ? (
+        <TaskEdit handleSubmit={handleSubmit} {...Task_props} />
+      ) : (
+        <h3 onClick={handleTextClick}>{Task_props.text}</h3>
+      )}
     </div>
   );
 }

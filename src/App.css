@@ -2,8 +2,6 @@
   text-align: center;
 }
 
-
-
 #createTask {
   color: white;
   background-color: green;
@@ -14,5 +12,9 @@
 }
 
 #createTask:hover {
-  color:gold
+  color: gold;
+}
+
+ul {
+  list-style-type: none;
 }
