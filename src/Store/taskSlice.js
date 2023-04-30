@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { blank } from "../constants";
 
 function removeElementFromArray(arr, ind) {
   if (ind == undefined) return arr;
@@ -7,36 +8,57 @@ function removeElementFromArray(arr, ind) {
   return arrBefore.concat(arrAfter);
 }
 
+function changeElementPosition(proxArr, source, dest) {
+  let arr = Array.from(proxArr);
+  const [movedEl] = arr.splice(source, 1);
+  arr.splice(dest, 0, movedEl);
+  return arr;
+}
+
 const shortid = require("shortid");
 
 const taskSlice = createSlice({
   name: "tasks",
-  initialState: [
-    // {
-    //   text: "Feed the Dog!",
-    // },
-  ],
+  initialState: [],
   reducers: {
     addEmptyTask: (state) => {
       state.unshift({ id: shortid.generate() });
     },
     UpdateTask: (state, action) => {
-      // console.log('updating ')
-      console.dir(action);
       const taskInfo = action.payload;
-      if (taskInfo.text.length === 0) taskInfo.text = "_"; //This will prevent an unaccebile empty task
+      if (taskInfo.text.length === 0) taskInfo.text = blank; //This will prevent an unaccebile empty task
       state[taskInfo.index].text = taskInfo.text;
     },
     deleteTask: (state, action) => {
-      // console.log('delete ')
-      console.dir(action);
       const newstate = removeElementFromArray(state, action.payload);
-      // console.log(newstate)
       return newstate;
+    },
+    changeTaskPosition: {
+      reducer: (state, action) => {
+        if (action.payload.source !== action.payload.destination)
+          return changeElementPosition(
+            state,
+            action.payload.source,
+            action.payload.destination
+          );
+      },
+      prepare: (movedTask) => {
+        return {
+          payload: {
+            source: movedTask.source.index,
+            destination: movedTask.destination.index,
+          },
+        };
+      },
     },
   },
 });
 
-export const { deleteTask, UpdateTask, addEmptyTask } = taskSlice.actions;
+export const {
+  deleteTask,
+  UpdateTask,
+  addEmptyTask,
+  changeTaskPosition,
+} = taskSlice.actions;
 
 export default taskSlice.reducer;

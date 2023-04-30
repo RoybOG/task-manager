@@ -5,13 +5,9 @@ import { useDispatch } from "react-redux";
 import { UpdateTask, deleteTask } from "../../Store/taskSlice";
 
 export default function Task(Task_props) {
-  // console.log('%c' + JSON.stringify(Task_props), 'color: greem')
-  //
-  // console.dir(Task_props);
   const [CanEdit, SetEditing] = useState(false);
   const dispatch = useDispatch();
   const handleSubmit = (userText) => {
-    // console.log('Submitted ' + userText)
     SetEditing(false);
     dispatch(UpdateTask({ ...Task_props, text: userText }));
   };
@@ -28,7 +24,6 @@ export default function Task(Task_props) {
     if (!Task_props.text) {
       SetEditing(true);
     }
-    // console.log(CanEdit);
   }, []);
 
   return (
