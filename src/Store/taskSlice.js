@@ -35,7 +35,7 @@ const taskSlice = createSlice({
     },
     changeTaskPosition: {
       reducer: (state, action) => {
-        if (action.payload.source !== action.payload.destination)
+        if (action.payload)
           return changeElementPosition(
             state,
             action.payload.source,
@@ -43,12 +43,15 @@ const taskSlice = createSlice({
           );
       },
       prepare: (movedTask) => {
-        return {
-          payload: {
-            source: movedTask.source.index,
-            destination: movedTask.destination.index,
-          },
-        };
+        if (!(movedTask.source == null || movedTask.destination == null))
+          if (movedTask.source.index !== movedTask.destination.index)
+            return {
+              payload: {
+                source: movedTask.source.index,
+                destination: movedTask.destination.index,
+              },
+            };
+        return { payload: null };
       },
     },
   },
