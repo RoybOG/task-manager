@@ -29,7 +29,7 @@ export default function TaskList({ tasksArr }) {
                       {...provided.dragHandleProps}
                       ref={provided.innerRef}
                     >
-                      <Task index={index} {...task_info} />
+                      <Task index={index} dir={"rtl"} {...task_info} />
                     </li>
                   )}
                 </Draggable>

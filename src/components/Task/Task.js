@@ -20,6 +20,25 @@ export default function Task(Task_props) {
     dispatch(deleteTask(Task_props.index));
   };
 
+  const DisplayTaskText = ({ children }) => {
+    if (typeof children === "string") {
+      return (
+        <div onClick={handleTextClick}>
+          {children.split("\n").map((t, index) => (
+            <h3
+              dir={Task_props.dir || "rtl"}
+              style={{ textAlign: Task_props.dir === "ltr" ? "left" : "right" }}
+              key={index}
+            >
+              {t}
+            </h3>
+          ))}
+        </div>
+      );
+    }
+    if (children != null) throw "child is not string!";
+  };
+
   useEffect(() => {
     if (!Task_props.text) {
       SetEditing(true);
@@ -32,10 +51,11 @@ export default function Task(Task_props) {
       <h6 id="delete" onClick={handleDelete}>
         X
       </h6>
+      {/* <DisplayTaskText>{Task_props.text}</DisplayTaskText> */}
       {CanEdit ? (
         <TaskEdit handleSubmit={handleSubmit} {...Task_props} />
       ) : (
-        <h3 onClick={handleTextClick}>{Task_props.text}</h3>
+        <DisplayTaskText>{Task_props.text}</DisplayTaskText>
       )}
     </div>
   );

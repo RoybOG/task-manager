@@ -40,6 +40,7 @@ h3 {
   color: white;
   text-align: center;
   font-weight: 700;
-  max-width: 250px;
-  word-wrap: break-word;
+  /* line-height: 0.2; */
+  max-width: 300px;
+  /* word-wrap: break-word; */
 }
