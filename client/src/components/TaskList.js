@@ -17,6 +17,7 @@ export default function TaskList({ tasksArr }) {
         {(provided) => (
           <ul {...provided.droppableProps} ref={provided.innerRef}>
             {tasksArr.map((task_info, index) => {
+              console.log(task_info.id);
               return (
                 <Draggable
                   key={task_info.id}
