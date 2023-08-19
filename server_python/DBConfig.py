@@ -1,6 +1,6 @@
 import mysql.connector
 
-SQL_ERROR = ({"error": "sql_error"}, 503)
+SQL_ERROR = lambda message="sql_error", error_code=503: ({"error": message}, error_code)
 
 RUN_TESTS = True
 
@@ -43,7 +43,7 @@ class SQLDBManager:
 
     def __enter__(self):
         self.con = mysql.connector.connect(
-            host="localhost", user="dev", password="", database="task_manager_db"
+            host="localhost", user="root", password="~&h8BfF2m#$g", database="task_manager_db"
         )
         self.cursor = self.con.cursor()
         test_log("enter")
@@ -56,33 +56,43 @@ class SQLDBManager:
 
 
 def FetchSqlCommand(sql_code, escape_args=None):
-    with SQLDBManager() as db:
-        try:
+    try:
+        with SQLDBManager() as db:
             db.cursor.execute(sql_code, escape_args)
             return {"data": db.cursor.fetchall()}, 200
-        except mysql.connector.Error as e:
-            test_log((sql_code, escape_args))
-            test_log(e)
-            return SQL_ERROR
+    except (mysql.connector.InterfaceError, mysql.connector.DatabaseError) as e:
+        test_log((sql_code, escape_args))
+        test_log(e)
+        return SQL_ERROR(message="couldn't connect to database", error_code= 502)
+
+    except mysql.connector.Error as e:
+        test_log((sql_code, escape_args))
+        test_log(e)
+        return SQL_ERROR()
 
 
 def runSqlCommand(sql_code, escape_args=None):
-    with SQLDBManager() as db:
-        try:
+    try:
+        with SQLDBManager() as db:
             db.cursor.execute(sql_code, escape_args)
             db.con.commit()
             test_log(db.cursor.rowcount)
             if db.cursor.rowcount == 0:
-                return SQL_ERROR
+                return SQL_ERROR()
             return {}, 200
-        except mysql.connector.Error as e:
-            test_log((sql_code, escape_args))
-            test_log(e)
-            return SQL_ERROR
+    except (mysql.connector.InterfaceError, mysql.connector.DatabaseError) as e:
+        test_log((sql_code, escape_args))
+        test_log(e)
+        return SQL_ERROR(message="couldn't connect to database", error_code= 502)
+
+    except (mysql.connector.Error) as e:
+        test_log((sql_code, escape_args))
+        test_log(e)
+        return SQL_ERROR()
 
 
 def getAllTasks(username):
-    return FetchSqlCommand("SELECT * FROM tasks where UserID = %s", [username])
+    return FetchSqlCommand("SELECT * FROM old_tasks where UserID = %s", [username])
 
 
 def insertNewTask(task_ID, task_username, task_priority, task_text):
