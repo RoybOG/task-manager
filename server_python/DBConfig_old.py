@@ -1,4 +1,5 @@
 import mysql.connector
+from DB_config import build_task_list
 
 SQL_ERROR = lambda message="sql_error", error_code=503: ({"error": message}, error_code)
 
@@ -126,6 +127,6 @@ def test_module():
     print("module testing")
     myresult = getAllTasks("itayb")
     print(myresult)
-
+    print(build_task_list('itaib'))
 
 test_module()
