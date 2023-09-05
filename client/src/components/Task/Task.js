@@ -1,12 +1,42 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import "./Task.css";
 import TaskEdit from "./TaskEdit";
 import { useDispatch } from "react-redux";
 import { UpdateTask, deleteTask } from "../../Store/taskSlice";
 
+function WarningPopOver({ onClickOutside, onClick }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        onClickOutside();
+      }
+    };
+    document.addEventListener("click", handleClickOutside, true);
+    return () => {
+      document.removeEventListener("click", handleClickOutside, true);
+    };
+  }, []);
+
+  return (
+    <p ref={ref} class="warning">
+      Are you sure you want to delete?
+      <button onClick={onClick}>Delete</button>
+    </p>
+  );
+}
+
 export default function Task(Task_props) {
   const [CanEdit, SetEditing] = useState(false);
+  const [showDeleteWarn, setshowDeleteWarn] = useState(false);
+
+  const handleDeleteClick = () => {
+    setshowDeleteWarn(true);
+  };
+
   const dispatch = useDispatch();
+
   const handleSubmit = (userText) => {
     SetEditing(false);
     dispatch(UpdateTask({ ...Task_props, text: userText }));
@@ -47,11 +77,20 @@ export default function Task(Task_props) {
 
   return (
     <div className="Task">
-      <h6 id="id">{Task_props.index + 1}</h6>
-      <h6 id="delete" onClick={handleDelete}>
-        X
-      </h6>
-      {/* <DisplayTaskText>{Task_props.text}</DisplayTaskText> */}
+      <p id="id" class="tooltip">
+        {Task_props.index + 1}
+      </p>
+      <p id="delete" class="tooltip" onClick={handleDeleteClick}>
+        <span>X</span>
+        {showDeleteWarn && (
+          <WarningPopOver
+            onClickOutside={() => {
+              setshowDeleteWarn(false);
+            }}
+            onClick={handleDelete}
+          />
+        )}
+      </p>
       {CanEdit ? (
         <TaskEdit handleSubmit={handleSubmit} {...Task_props} />
       ) : (

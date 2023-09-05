@@ -11,28 +11,29 @@
   margin-top: 10px;
 }
 #id {
-  border-radius: 40%;
-  position: absolute;
-  display: inline-block;
-  top: 0;
-  left: 0;
+  left: 3px;
   text-align: center;
   color: blue;
   background-color: gold;
 }
 
 #delete {
-  border-radius: 40%;
-  position: absolute;
-  display: inline-block;
-  top: 0;
-  right: 0;
+  right: 3px;
   text-align: center;
   color: white;
   background-color: red;
 }
 
-#delete:hover {
+.tooltip {
+  border-radius: 40%;
+  position: absolute;
+  display: inline;
+  top: 3px;
+  margin: 0px;
+}
+
+p#delete > span:hover,
+p.warning > button:hover {
   color: gold;
 }
 
@@ -43,4 +44,32 @@ h3 {
   /* line-height: 0.2; */
   max-width: 300px;
   /* word-wrap: break-word; */
+}
+
+p.warning {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 3;
+  color: black;
+  box-shadow: 5px 10px #888888;
+  background-color: white;
+  border: 3px black dashed;
+  padding: 7px;
+  border-radius: 10px;
+}
+
+p.warning > button {
+  font-family: "Georgia", Times, serif;
+  background-color: red;
+  color: white;
+  font-weight: bold;
+  border: 1px black solid;
+  border-radius: 10px;
+  margin: 3px;
+  margin-top: 7px;
+}
+
+textarea {
+  margin: 0.1em;
 }
