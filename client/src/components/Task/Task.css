@@ -7,7 +7,7 @@
   border-color: orange;
   background-color: green;
   padding: 20px;
-  font-family: "Georgia", Times, serif;
+
   margin-top: 10px;
 }
 #id {
@@ -32,7 +32,8 @@
 }
 
 p#delete > span:hover,
-p.warning > button:hover {
+p.warning > button:hover,
+button#submit:hover {
   color: gold;
 }
 
@@ -51,7 +52,7 @@ p.warning {
   left: 0px;
   z-index: 3;
   color: black;
-  box-shadow: 5px 10px #888888;
+  box-shadow: -2px 3px #242222;
   background-color: white;
   border: 3px black dashed;
   padding: 7px;
@@ -59,7 +60,6 @@ p.warning {
 }
 
 p.warning > button {
-  font-family: "Georgia", Times, serif;
   background-color: red;
   color: white;
   font-weight: bold;
@@ -71,4 +71,17 @@ p.warning > button {
 
 textarea {
   margin: 0.1em;
+}
+
+button#submit {
+  background-color: #02e307;
+  border-color: gold;
+  border-radius: 10px;
+  padding: 0.5em;
+  font-weight: bold;
+  color: white;
+}
+
+ul {
+  list-style: none;
 }

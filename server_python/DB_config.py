@@ -1,8 +1,10 @@
 from sqlalchemy.sql import text
+from sqlalchemy import and_ as join_and
 from json import dumps
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from datetime import timedelta
+from sqlalchemy.inspection import inspect as table_inspect
 
 SQL_ERROR = lambda message="sql_error", error_code=503: ({"error": message}, error_code)
 
@@ -47,7 +49,7 @@ class User(db.Model):
     _password = db.Column(db.String(255), nullable=False)
 
     user_tasks = db.relationship("Task", backref="user")
-    list_heads = db.relationship("ListHead", backref="user")
+    lists = db.relationship("List", backref="user")
 
 
 class Task(db.Model):
@@ -55,7 +57,7 @@ class Task(db.Model):
     task_id = db.Column(db.String(20), primary_key=True)
     user_id = db.Column(db.String(255), db.ForeignKey("user.id"))
 
-    list_name = db.Column(db.String(255))
+    list_id = db.Column(db.String(20),nullable=False)
     task_text = db.Column(db.Text)
     task_next = db.Column(db.String(20))
 
@@ -63,7 +65,7 @@ class Task(db.Model):
         return f'<Task {self.task_id}: {self.task_text}>'
 
     def get_prev_task(self):
-        return db.session.query(Task).filter(Task.task_next == self.task_id and Task.user_id==self.user_id).first()
+        return db.session.query(Task).filter(join_and(Task.task_next == self.task_id, Task.user_id==self.user_id)).first()
     """
     def __iter__(self):
         for key in iter(
@@ -79,17 +81,19 @@ class Task(db.Model):
     """
 
 
-class ListHead(db.Model):
-    # __tablename__ = 'list_heads'
+class List(db.Model):
     user_id = db.Column(db.String(255), db.ForeignKey("user.id"), primary_key=True)
+    list_id = db.Column(
+        db.String(20), primary_key=True
+    )
     list_head_id = db.Column(
         db.String(20), db.ForeignKey("task.task_id")
     )
-    list_name = db.Column(db.String(255), primary_key=True) #I chose the name to be apart of the primary key becuase the header ID changes
-    head_task = db.relationship("Task", foreign_keys="ListHead.list_head_id", uselist=False)
+    list_name = db.Column(db.String(255)) #I chose the name to be apart of the primary key becuase the header ID changes
+    head_task = db.relationship("Task", foreign_keys="List.list_head_id", uselist=False)
 
     def __repr__(self):
-        return f"<Task head {self.list_head_id} by user {self.user_id}>"
+        return f"<List {self.list_head_id} by user {self.user_id}>"
 
     def build_task_list(self):
         """
@@ -101,9 +105,9 @@ class ListHead(db.Model):
         next_id = self.list_head_id
         with app.app_context():
             while next_id:
-                current_task = get_task(self.user_id, next_id)
+                current_task = get_dict_task(self.user_id, next_id)
                 if not current_task:
-                    break;
+                    break
                 next_id = current_task.pop("task_next")
                 task_list.append(current_task)
 
@@ -137,78 +141,103 @@ def _execute_quary(raw_sql_code, arg_dict=None, filter_func= lambda l:l):
     # raw sql query is faster then orm query
 
 
-def get_task(user_id, task_id):
+def update_db_obj(db_obj, new_args):
+    primary_keys = [p_key.name for p_key in table_inspect(db_obj.__class__).primary_key]
+    if new_args:
+        for k, v in new_args.items():
+            if k not in primary_keys:  # This prevents requests from changing identifying properties like IDs
+                setattr(db_obj, k, v)
+
+
+
+def get_dict_task(user_id, task_id):
     return _execute_quary("SELECT * from task where user_id= :user and task_id= :task_id",
                          {'user':user_id, 'task_id': task_id}, lambda task_rows:task_rows[0])
 
 
+def get_user_lists(user_id):
+    with app.app_context():
+        return _execute_quary("SELECT list_id from list where user_id= :user",
+                         {'user':user_id}, lambda dict_lists: [list_dict["list_id"] for list_dict in dict_lists]) or []
+
+
 def get_task_obj(user_id, task_id):
-    return db.session.query(Task).filter(Task.task_id == task_id and Task.user_id == user_id).first()
+    return db.session.query(Task).filter(join_and(Task.task_id == task_id,Task.user_id == user_id)).first()
 
 
 def create_task(new_task_obj):
     task_num = db.session.execute(text("SELECT count(*) from task")).fetchone()[0]
     db.session.add(new_task_obj)
-    db.session.commit()
     test_log(db.session.query(Task).count())
     if db.session.execute(text("SELECT count(*) from task")).fetchone()[0] == task_num: # check if the task was inserted
         raise Exception("failed in inserting")
 
 
-def get_user(user_id):
-    return db.session.query(User).filter(User.id == user_id).first()
+def get_list_obj(user_id, list_id):
+    return db.session.query(List).filter(join_and(List.user_id == user_id, List.list_id == list_id)).first()
 
 
-def get_list(user_id):
+def get_user_obj(user_id):
+    return db.session.query(User).filter(List.user_id == user_id).first()
+
+
+def get_list(user_id, list_id):
+    tasks_list = {}
     with app.app_context():
-        user_obj = get_user(user_id)
-        task_list = []
-        if len(user_obj.list_heads)>0:
-            task_list = user_obj.list_heads[0].build_task_list()
+        list_obj = get_list_obj(user_id, list_id)
+        if list_obj:
+            tasks_list["list_name"] = list_obj.list_name
+            tasks_list["list"] = list_obj.build_task_list()
+        else:
+            return None
 
-    return task_list
+    return tasks_list
 
 
-def create_new_list(user_id, first_task_obj, list_name=''):
+def create_new_list(user_id, list_id, extra_args=None):
     with app.app_context():
-        first_task_obj.list_name = list_name
-        create_task(first_task_obj)
-        db.session.add(ListHead(user_id=user_id, list_head_id=first_task_obj.task_id, list_name=list_name))
+        new_list_obj = List(user_id=user_id, list_id=list_id)
+        update_db_obj(new_list_obj, extra_args)
+        db.session.add(new_list_obj)
         db.session.commit()
 
 
-def add_new_task(user_id, new_task_obj):
+def add_new_task(user_id, extra_args):
     with app.app_context():
-        user_obj = get_user(user_id)
+        list_obj = get_list_obj(user_id,extra_args["list_id"])
 
-        # try:
-        if True:
-            if user_obj.list_heads: # meaning this is the user's first task in his first list
-                print("adding to list")
-                user_obj.list_heads[0].swap_head(new_task_obj)
-                create_task(new_task_obj)
-                db.session.commit() # This will make sure the head_id is changed and saved
-            else:
-                print("creating a new list")
-                create_new_list(user_id, new_task_obj)
+        if list_obj:
+            new_task_obj = Task(user_id=user_id, list_id=extra_args.pop('list_id'), task_id= extra_args.pop('task_id'))
+            update_db_obj(new_task_obj, extra_args)
+            print("adding to list")
+            list_obj.swap_head(new_task_obj)
+            create_task(new_task_obj)
+            db.session.commit() # This will make sure the head_id is changed and saved
+            return "ok", 200
+        else:
+            return "list not found", 404
 
 
-        # except:
-        #     return new_task_obj, 500
-
-def update_task(user_id,task_id, new_args):
+def update_task(user_id, task_id, new_args):
     with app.app_context():
         task_obj = get_task_obj(user_id, task_id)
-        print(task_obj)
-        if not task_obj:
+        if task_obj:
+            update_db_obj(task_obj, new_args)
+            db.session.commit()
+        else:
             return "not found", 404
+    return "ok", 200
 
-        for k,v in new_args.items():
-            setattr(task_obj,k,v)
-        print(task_obj)
-        db.session.commit()
+
+def update_list(user_id,list_id, new_args):
+    with app.app_context():
+        list_obj = get_list_obj(user_id, list_id)
+        if list_obj:
+            update_db_obj(list_obj, new_args)
+            db.session.commit()
+        else:
+            return "not found", 404
         return "ok", 200
-
 
 def move_task(user_id, target_task_id, des_task_id):
     """
@@ -230,20 +259,27 @@ def move_task(user_id, target_task_id, des_task_id):
         # This handles the case when there wasn't any movement
         if task_obj.task_next == des_task_id or target_task_id == des_task_id:
             return 'nothing moved', 200
-        head_task_obj = db.session.query(ListHead).filter(
-            ListHead.list_head_id == target_task_id ).first()
+
+        head_task_obj = db.session.query(List).filter(join_and(
+            List.list_head_id == target_task_id, List.list_id == task_obj.list_id)).first()
         if head_task_obj:
-            # This handles the case where the task the user moves the head of a list.
+            # This handles the case where the task the user moves is the head of a list.
             # so the task after it wiil be the new head
-            head_task_obj.list_head_id = task_obj.task_next
+            if task_obj.task_next:
+                head_task_obj.list_head_id = task_obj.task_next
+            else:
+                # In case the head was moved and it was the only one on the list, so one item can't move becuase there's
+                # only one position on the list.
+                return 'nothing moved', 200
 
         else:
-            # disconnects a task from the list by linking the previous one to the task after our target
+            # disconnects a normal task from the list by linking the previous one to the task after our target
             prev_obj = task_obj.get_prev_task()
             prev_obj.task_next = task_obj.task_next
 
         if des_task_id:
-            des_obj = db.session.query(ListHead).filter(ListHead.list_head_id == des_task_id and ListHead.list_name == task_obj.list_name).first()
+            des_obj = db.session.query(List).filter(join_and(List.list_head_id == des_task_id
+                                                     ,List.list_id == task_obj.list_id)).first()
             if des_obj:
                 # Takes care of the case when the destination is the head of the moved task's list
                 des_obj.swap_head(task_obj)
@@ -258,12 +294,11 @@ def move_task(user_id, target_task_id, des_task_id):
                 task_obj.task_next = des_task_id
 
         else:
-
-    #         # Takes care of when the ID is null, which means, push it all the way to the end of the list
+        # Takes care of when the ID is null, which means, push it all the way to the end of the list
             code_res = db.session.execute(
-                text("update task set task_next= :task_id where list_name = :list_name"
+                text("update task set task_next= :task_id where list_id = :list_id"
                      " and (task_next = '' or task_next IS NULL);"),
-                {'list_name':task_obj.list_name, 'task_id':target_task_id})
+                {'list_id': task_obj.list_id, 'task_id':target_task_id})
 
             task_obj.task_next = None
 
@@ -277,12 +312,14 @@ def delete_task_in_db(user_id,task_id):
         task_obj = get_task_obj(user_id, task_id)
         if not task_obj:
             return 'task not found', 404
-        head_task_obj = db.session.query(ListHead).filter(ListHead.list_head_id == task_id).first()
+        head_task_obj = db.session.query(List).filter(List.list_head_id == task_id).first()
 
         if head_task_obj:
+            # Takes care of the case that the user wants to delete the head
             if head_task_obj.head_task.task_next:
                 head_task_obj.list_head_id = head_task_obj.head_task.task_next
             else:
+                # Takes care of the case that there's only one task on the list, the head
                 db.session.delete(head_task_obj)
         else:
             prev_obj = task_obj.get_prev_task()
@@ -329,24 +366,27 @@ def recreate_db():
     print("recreating DB")
     db_restart()
 
-    create_new_list("itaib", Task(
-                    task_id="H7#I4%rT5Q",
-                    user_id="itaib",
-                    task_text="build database",
-                ), list_name='1')
+    create_new_list("itaib", list_id='$#D1!qD2F', list_name='1')
 
-    add_new_task("itaib", Task(
-                    task_id="sci5n7yE0",
-                    user_id="itaib",
-                    task_text="Buy casio watch/ntoday!",
-                ))
-    add_new_task("itaib",Task(task_id="HK7v8F9oi", user_id="itaib", task_text="python exercise"))
-    add_new_task("itaib",Task(task_id="A4weT~@", user_id="itaib", task_text="Work on JS React flask project of task manager"))
-    add_new_task("itaib", Task(task_id="H#I4wwT9@", user_id="itaib", task_text="work on python project"))
-    
-    add_new_task("itaib", Task(task_id="HW4v1E9dl", user_id="itaib", task_text="learn HTML"))
+    add_new_task("itaib", '$#D1!qD2F', {
+        "task_id":"H7#I4%rT5Q",
+        "user_id":"itaib",
+        "task_text":"build database",
+    })
 
-    
+    add_new_task("itaib", '$#D1!qD2F', {
+                    "task_id":"sci5n7yE0",
+                    "user_id":"itaib",
+                    "task_text":"Buy casio watch/ntoday!"})
+    # add_new_task("itaib", '$#D1!qD2F',Task(task_id="HK7v8F9oi", user_id="itaib", task_text="python exercise"))
+    # add_new_task("itaib", '$#D1!qD2F',Task(task_id="A4weT~@", user_id="itaib", task_text="Work on JS React flask project of task manager"))
+
+    # create_new_list("itaib", list_id='$8#Ne#1Fe2', list_name='t')
+
+    # add_new_task("itaib", '$8#Ne#1Fe2', Task(task_id="H#I4wwT9@", user_id="itaib", task_text="work on python project"))
+    #
+    # add_new_task("itaib", '$8#Ne#1Fe2', Task(task_id="HW4v1E9dl", user_id="itaib", task_text="learn HTML"))
+
 
 
 
@@ -354,11 +394,25 @@ def recreate_db():
 @test_decorator
 def test_module():
     #db_restart()
-#    recreate_db()
-    add_new_task("itaib", Task(task_id="H#I4wwT9@", user_id="itaib", task_text="work on python project"))
+   #r ecreate_db()
+    #print(update_task('itaib','H7#I4%rT5Q',{'task_id':'a','task_text':'A'}))
+
+    add_new_task("itaib", {
+        "task_id": "sci5n7yE0",
+        "list_id":"$#D1!qD2F",
+        "task_text": "Buy casio watch/ntoday!",
+    })
+
+    # print(get_list("itaib", '$#D1!qD2F'))
+    # print(get_list("itaib", '$8#Ne#1Fe2'))
+    # print(get_user_lists("itaib"))
+    #print(move_task("itaib", "H#I4wwT9@", "HW4v1E9dl"))
+    #print(*get_list("itaib", '$8#Ne#1Fe2'), sep="\n")
+    # print(delete_task_in_db('itaib','sci5n7yE0'))
+    #print(*get_list("itaib", '$#D1!qD2F'), sep="\n")
+#    add_new_task("itaib", Task(task_id="H#I4wwT9@", user_id="itaib", task_text="work on python project"))
     #print(*get_list("itaib"), sep = "\n")
     #with app.app_context():
-    #    print(get_task('itaib', 'A'))
     #print(move_task("itaib", "HW4v1E9dl", None))
     #print(move_task("itaib", "sci5n7yE0", None))
     #print(delete_task_in_db("itaib",  "H7#I4%rT5Q"))
@@ -375,6 +429,4 @@ def test_module():
     add_new_task('itaib', Task(task_id="H7#I4%rT5Q",user_id="itaib", task_text="build database"))
     print(get_list("itaib"))
     """
-
-
 test_module()

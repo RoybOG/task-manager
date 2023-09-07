@@ -38,9 +38,9 @@ export default function TaskEdit(Task_props) {
         //this to prevent The blank sign to be visible when ediing an empty task
       </textarea>
       <br></br>
-      <Button variant="contained" color="secondary" onClick={handleSubmit}>
+      <button id="submit" onClick={handleSubmit}>
         submit
-      </Button>
+      </button>
     </React.Fragment>
   );
 }

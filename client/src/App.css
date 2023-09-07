@@ -1,3 +1,8 @@
+* {
+  font-family: "Georgia", Times, serif;
+  border-radius: 10px;
+}
+
 .App {
   text-align: center;
 }
@@ -7,14 +12,23 @@
   background-color: green;
   border-radius: 40%;
   border-color: gold;
-  margin-left: 350px;
-  /* float: right; */
+  display: block;
+  float: right;
+  clear: both;
 }
 
 #createTask:hover {
   color: gold;
 }
 
-ul {
+ul.tasklist {
   list-style-type: none;
+  background-color: darkblue;
+  display: inline-block;
+  padding: 5px;
+  border-radius: 10px;
+}
+
+ul.tasklist > h3 {
+  margin: 0.3em;
 }

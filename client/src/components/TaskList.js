@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Task from "./Task/Task";
 import { changeTaskPosition } from "../Store/taskSlice";
+import { addEmptyTask } from "../Store/taskSlice";
 
 export default function TaskList({ tasksArr }) {
   const dispatch = useDispatch();
@@ -11,11 +12,24 @@ export default function TaskList({ tasksArr }) {
     dispatch(changeTaskPosition(DroppedTask));
   };
 
+  const handleCreate = () => {
+    dispatch(addEmptyTask());
+  };
+
   return (
-    <DragDropContext onDragEnd={handleDragEnd}>
+    <DragDropContext onDragEnd={handleDragEnd} class="taskList">
       <Droppable droppableId="tasks">
         {(provided) => (
-          <ul {...provided.droppableProps} ref={provided.innerRef}>
+          <ul
+            {...provided.droppableProps}
+            class="tasklist"
+            ref={provided.innerRef}
+          >
+            <h3>Urgent Tasks</h3>
+            <button id="createTask" onClick={handleCreate}>
+              +
+            </button>
+
             {tasksArr.map((task_info, index) => {
               console.log(task_info.id);
               return (
