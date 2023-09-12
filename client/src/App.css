@@ -3,15 +3,37 @@
   border-radius: 10px;
 }
 
+body {
+  background-image: linear-gradient(mediumpurple, transparent);
+  background-repeat: no-repeat;
+}
+
 .App {
   text-align: center;
+}
+
+h1 {
+  text-decoration: underline;
+  font-style: italic;
+  font-weight: bold;
+  color: lawngreen;
+  margin-block-end: 0px;
+}
+
+h2 {
+  font-family: "Cormorant Upright", serif;
+  font-weight: 600;
+  margin-block-start: 0.2em;
+  color: lawngreen;
+}
+button {
+  border-color: gold;
 }
 
 #createTask {
   color: white;
   background-color: green;
-  border-radius: 40%;
-  border-color: gold;
+
   display: block;
   float: right;
   clear: both;
@@ -26,9 +48,34 @@ ul.tasklist {
   background-color: darkblue;
   display: inline-block;
   padding: 5px;
-  border-radius: 10px;
 }
-
+ul li {
+  clear: both;
+}
 ul.tasklist > h3 {
   margin: 0.3em;
+}
+
+menu {
+  padding: 3px;
+  border: 3px gold ridge;
+  margin: 0 auto;
+  display: block;
+  width: fit-content;
+  background-color: yellowgreen;
+}
+
+menu button svg {
+  width: 0.7em;
+  height: 0.7em;
+  padding: 0px;
+}
+
+menu button:nth-child(1) {
+  transform: scaleX(-1);
+}
+
+menu button#createList {
+  color: white;
+  background-color: green;
 }

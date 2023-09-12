@@ -1,8 +1,16 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, createAction } from "@reduxjs/toolkit";
 import taskSlice from "./taskSlice";
+import saveSlice from "./saveSlice";
 
-export default configureStore({
-    reducer: {
-        tasks: taskSlice
-    }
-})
+const store = configureStore({
+  reducer: {
+    tasks: taskSlice,
+    save: saveSlice,
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
+});
+
+export default store;

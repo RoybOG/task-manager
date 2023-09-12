@@ -2,27 +2,24 @@ import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Task from "./Task/Task";
-import { changeTaskPosition } from "../Store/taskSlice";
-import { addEmptyTask } from "../Store/taskSlice";
+import { storeActions } from "../Store/taskSlice";
 
 export default function TaskList({ tasksArr }) {
   const dispatch = useDispatch();
-
   const handleDragEnd = (DroppedTask) => {
-    dispatch(changeTaskPosition(DroppedTask));
+    dispatch(storeActions.changeTaskPosition(DroppedTask));
   };
-
   const handleCreate = () => {
-    dispatch(addEmptyTask());
+    dispatch(storeActions.addEmptyTask());
   };
 
   return (
-    <DragDropContext onDragEnd={handleDragEnd} class="taskList">
+    <DragDropContext onDragEnd={handleDragEnd} className="taskList">
       <Droppable droppableId="tasks">
         {(provided) => (
           <ul
             {...provided.droppableProps}
-            class="tasklist"
+            className="tasklist"
             ref={provided.innerRef}
           >
             <h3>Urgent Tasks</h3>
@@ -31,7 +28,6 @@ export default function TaskList({ tasksArr }) {
             </button>
 
             {tasksArr.map((task_info, index) => {
-              console.log(task_info.id);
               return (
                 <Draggable
                   key={task_info.id}

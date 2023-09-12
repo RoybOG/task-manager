@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import "./Task.css";
 import TaskEdit from "./TaskEdit";
 import { useDispatch } from "react-redux";
-import { UpdateTask, deleteTask } from "../../Store/taskSlice";
+import { storeActions } from "../../Store/taskSlice";
 
 function WarningPopOver({ onClickOutside, onClick }) {
   const ref = useRef(null);
@@ -30,7 +30,6 @@ function WarningPopOver({ onClickOutside, onClick }) {
 export default function Task(Task_props) {
   const [CanEdit, SetEditing] = useState(false);
   const [showDeleteWarn, setshowDeleteWarn] = useState(false);
-
   const handleDeleteClick = () => {
     setshowDeleteWarn(true);
   };
@@ -39,7 +38,13 @@ export default function Task(Task_props) {
 
   const handleSubmit = (userText) => {
     SetEditing(false);
-    dispatch(UpdateTask({ ...Task_props, text: userText }));
+    dispatch(
+      storeActions.updateTask({
+        ...Task_props,
+        prevText: Task_props.text || "",
+        text: userText,
+      })
+    );
   };
 
   const handleTextClick = () => {
@@ -47,7 +52,7 @@ export default function Task(Task_props) {
   };
 
   const handleDelete = () => {
-    dispatch(deleteTask(Task_props.index));
+    dispatch(storeActions.deleteTask(Task_props));
   };
 
   const DisplayTaskText = ({ children }) => {

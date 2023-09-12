@@ -56,7 +56,6 @@ p.warning {
   background-color: white;
   border: 3px black dashed;
   padding: 7px;
-  border-radius: 10px;
 }
 
 p.warning > button {
@@ -64,9 +63,13 @@ p.warning > button {
   color: white;
   font-weight: bold;
   border: 1px black solid;
-  border-radius: 10px;
   margin: 3px;
   margin-top: 7px;
+  border-style: outset;
+}
+
+p.warning > button:hover {
+  border-style: ridge;
 }
 
 textarea {
@@ -75,9 +78,7 @@ textarea {
 
 button#submit {
   background-color: #02e307;
-  border-color: gold;
-  border-radius: 10px;
-  padding: 0.5em;
+
   font-weight: bold;
   color: white;
 }
