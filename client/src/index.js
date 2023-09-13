@@ -7,6 +7,16 @@ import { Provider } from "react-redux";
 import Store from "./Store/Store";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
+
+// adding listeners to the app:
+
+/*window.addEventListener("beforeunload", (e) => {
+  let saveWarning = ("There are unsaved changes to your task! \nIf you leave they will be lost!"(
+    e || window.Event
+  ).returnValue = saveWarning);
+  return saveWarning;
+});*/
+
 root.render(
   <Provider store={Store}>
     {/* <React.StrictMode> */}

@@ -71,11 +71,15 @@ menu button svg {
   padding: 0px;
 }
 
-menu button:nth-child(1) {
-  transform: scaleX(-1);
+menu button {
+  border-color: gold;
+  /* background-color: #02e307; */
 }
 
-menu button#createList {
-  color: white;
-  background-color: green;
+menu button:disabled {
+  border-color: goldenrod;
+  /* background-color: green; */
+}
+menu button:nth-child(1) {
+  transform: scaleX(-1);
 }

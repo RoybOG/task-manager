@@ -28,9 +28,11 @@ class userAction {
    * Stores an action a user dispatched to the store.
    * @param {ReduxAction} userAction will save the user action that was just disptached
    * @param {ReduxAction} reverseAction The action that when dispatched, will revert the store's state to it's previous state before the action was dispatched
+   * @param {Object} userActionRequest An object of a configuration of an axios request for the userAction to send to the server. note that we're not going to send the   reverseAction to the server becuase it cancels the userAction BEFORE it get to the server. reverseAcions are NOT listed in History thus won't effect the DB
    */
-  constructor(userAction, reverseAction) {
+  constructor(userAction, reverseAction, userActionRequest) {
     this.userAction = { ...userAction, type: "tasks/" + userAction.type };
+    this.userActionRequest = userActionRequest;
     this.reverseAction = {
       ...reverseAction,
       type: "tasks/" + reverseAction.type,
@@ -58,63 +60,83 @@ const saveSlice = createSlice({
     save: (state) => {
       if (state.actionsHistory.length > 1) {
         //Becuase we have the null action that nothing happend yet already in the history
-        state.actionsHistory.slice(state.presentActionPointer);
-        state.unshift(initialState.actionsHistory[0]);
+        state.actionsHistory = state.actionsHistory.slice(
+          state.presentActionPointer + 1
+        );
+        state.actionsHistory.unshift(initialState.actionsHistory[0]);
+
+        state.presentActionPointer = 0;
       }
     },
-    /* undoList: (state) => {
-      console.log("undo");
-      //meaning we didn't undo all the actions the user did
-
-      state.presentActionPointer -= 1;
-      // state.actionsHistory[state.presentActionPointer].undoAction();
-    },
-    redoList: (state) => {
-      //Meaning we undid some user actions
-      console.log("redo");
-      state.presentActionPointer += 1;
-    },*/
   },
   extraReducers: (builder) => {
     builder
+
       .addCase(storeActions.addEmptyTask, (state, action) => {
         console.log(state);
+        const requestConfig = {
+          method: "post",
+          url: "/insert_task",
+          data: { task_id: action.payload.id, list_id: "$#D1!qD2F" },
+        };
+
         const newUserAction = new userAction(
           action,
-          storeActions.deleteTask(action.payload)
+          storeActions.deleteTask(action.payload),
+          requestConfig
         );
+
         addUserAction(state, newUserAction);
       })
+
       .addCase(storeActions.updateTask, (state, action) => {
         if (action.payload.prevText != action.payload.text) {
+          const requestConfig = {
+            method: "put",
+            url: "/update_task/" + encodeURI(action.payload.id),
+            data: { task_text: action.payload.text },
+          };
+
           const newUserAction = new userAction(
             action,
             storeActions.updateTask({
               ...action.payload,
               text: action.payload.prevText,
-            })
+            }),
+            requestConfig
           );
           addUserAction(state, newUserAction);
         }
       })
       .addCase(storeActions.deleteTask, (state, action) => {
+        const requestConfig = {
+          method: "delete",
+          url: "/delete_task/" + encodeURI(action.payload.id),
+        };
         const newUserAction = new userAction(
           action,
           storeActions.insertTask({
             id: action.payload.id,
             text: action.payload.text,
-          })
+          }),
+          requestConfig
         );
         addUserAction(state, newUserAction);
       })
       .addCase(storeActions.changeTaskPosition, (state, action) => {
+        const requestConfig = {
+          method: "put",
+          url: "/move_task",
+          params: action.payload,
+        };
         if (action.payload) {
           const newUserAction = new userAction(
             action,
             storeActions.changeTaskPosition({
               source: action.payload.destination,
               destination: action.payload.source,
-            })
+            }),
+            requestConfig
           );
           addUserAction(state, newUserAction);
         }
@@ -134,7 +156,7 @@ const saveSlice = createSlice({
 
 // Actions
 
-const { undoList, redoList, save } = saveSlice.actions;
+export const { save } = saveSlice.actions;
 
 export const redo = createAsyncThunk(
   "redo",
