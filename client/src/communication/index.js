@@ -1,23 +1,48 @@
-export default axiosCon = axios.create({
-  baseURL: "https://localhost:3000",
+const axios = require("axios");
+
+const axiosCon = new axios.Axios({
+  baseURL: "http://localhost:5000",
   timeout: 1000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  transformResponse: [
+    (data) => {
+      let res = data;
+      if (typeof res == "string") {
+        try {
+          res = JSON.parse(res);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      return res;
+    },
+  ],
 });
-
+// console.log(axiosCon);
 const MAXNUMOFATTEMPTS = 3;
-
 export const sendRequest = async (requestConfig) => {
-  let result; //= {status:200, data:}
+  var result = { successful: true, data: null };
   try {
-    if (requestConfig.hasOwnProperty(numOfAttempts)) {
-      result = await axiosCon(requestConfig.config);
+    if (requestConfig.hasOwnProperty("numOfAttempts")) {
+      result.data = { data: await axiosCon.request(requestConfig.config) };
     } else {
-      result = await axiosCon(requestConfig);
+      result.data = await axiosCon.request(requestConfig);
+      console.log(typeof result.data);
+      return result;
     }
-  } catch {
-    if (requestConfig.hasOwnProperty(numOfAttempts)) {
-      if (requestConfig.numOfAttempts < MAXNUMOFATTEMPTS - 1) {
-      } else {
-        result = await sendRequest({ numOfAttempts: 1, config: requestConfig });
+  } catch (err) {
+    //console.log(result);
+
+    if (requestConfig.hasOwnProperty("numOfAttempts")) {
+      if (requestConfig.numOfAttempts == MAXNUMOFATTEMPTS) {
+        result = { successful: false, data: err };
+      } else if (requestConfig.numOfAttempts < MAXNUMOFATTEMPTS) {
+        result = await sendRequest({
+          ...requestConfig,
+          numOfAttempts: requestConfig.numOfAttempts + 1,
+        });
       }
     } else {
       result = await sendRequest({ numOfAttempts: 1, config: requestConfig });
@@ -26,3 +51,14 @@ export const sendRequest = async (requestConfig) => {
     return result;
   }
 };
+
+//export default axiosCon;
+/*
+sendRequest({ method: "get", url: "/get_all_lists" }).then(
+  (res) => {
+    console.log(res);
+  },
+  (err) => {
+    console.log(err);
+  }
+);*/

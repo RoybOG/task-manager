@@ -71,6 +71,21 @@ menu button svg {
   padding: 0px;
 }
 
+@keyframes spinEL {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+svg#loadingSpinner {
+  width: 10em;
+  height: 10em;
+  animation: spinEL 1s infinite;
+}
+
 menu button {
   border-color: gold;
   /* background-color: #02e307; */
@@ -82,4 +97,8 @@ menu button:disabled {
 }
 menu button:nth-child(1) {
   transform: scaleX(-1);
+}
+
+h3#failed {
+  color: red;
 }

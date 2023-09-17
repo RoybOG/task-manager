@@ -5,17 +5,18 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { Provider } from "react-redux";
 import Store from "./Store/Store";
+import { SelectCanExitPage } from "./Store/storeSelectors";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 // adding listeners to the app:
 
-/*window.addEventListener("beforeunload", (e) => {
-  let saveWarning = ("There are unsaved changes to your task! \nIf you leave they will be lost!"(
-    e || window.Event
-  ).returnValue = saveWarning);
-  return saveWarning;
-});*/
+window.addEventListener("beforeunload", (event) => {
+  if (SelectCanExitPage(Store.getState())) {
+    event.preventDefault();
+    event.returnValue = `Are you sure you want to leave?`;
+  }
+});
 
 root.render(
   <Provider store={Store}>

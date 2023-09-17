@@ -57,6 +57,7 @@ def check_args(user_args_dict, required_params):
 #     return response
 # Find out why the session doesn't work
 # -----------------------------------routes--------------------------------------
+user_name = "itaib"
 
 
 @app.route("/")
@@ -73,7 +74,7 @@ def send_list(list_id):
     print(list_id)
     print_dict(session)
     if list_id not in session["user_tasks"]:
-        task_list = get_list(session["username"], list_id)
+        task_list = get_list(user_name, list_id)
         print(task_list)
         if task_list:
             session["user_tasks"][list_id] = task_list
@@ -90,13 +91,14 @@ def send_list(list_id):
 def send_user_lists():
     # if "user_tasks" not in session:with app.app_context():
     print_dict(session)
+    session["user_tasks"] = {}
     with app.app_context():
-        for list_id in get_user_lists(session["username"]):
+        for list_id in get_user_lists(user_name):
             if list_id not in session["user_tasks"]:
-                session["user_tasks"][list_id] = get_list(session["username"], list_id)
+                session["user_tasks"][list_id] = get_list(user_name, list_id)
 
     print_dict(session["user_tasks"])
-    return session["user_tasks"]
+    return jsonify(session["user_tasks"])
 
 
 @app.post("/create_list")
@@ -105,7 +107,7 @@ def post_list():
     print_dict(new_task_args)
     new_task_args, status_code = check_args(new_task_args, ["list_id"])
     if status_code == 200:
-        create_new_list(session["username"], new_task_args["list_id"], new_task_args)
+        create_new_list(user_name, new_task_args["list_id"], new_task_args)
 
     return new_task_args, status_code
 
@@ -117,7 +119,7 @@ def post_task():
     new_task_args, status_code = check_args(new_task_args, ["task_id", "list_id"])
 
     if status_code == 200:
-        return add_new_task(session["username"], new_task_args)
+        return add_new_task(user_name, new_task_args)
 
     return new_task_args, status_code
 
@@ -127,7 +129,7 @@ def put_task(task_id):
     new_task_args = request.get_json()
     res, status_code = check_args(new_task_args, ["task_text"])
     if status_code == 200:
-        res, status_code = update_task(session["username"], task_id, res)
+        res, status_code = update_task(user_name, task_id, res)
 
     return res, status_code
 
@@ -138,16 +140,14 @@ def change_task_priority():
     print(dict(request.args))
     res, status_code = check_args(dict(request.args), ["source", "destination"])
     if status_code == 200:
-        res, status_code = move_task(
-            session["username"], res["source"], res["destination"]
-        )
+        res, status_code = move_task(user_name, res["source"], res["destination"])
 
     return res, status_code
 
 
 @app.delete("/delete_task/<task_id>")
 def delete_task(task_id):
-    return delete_task_in_db(session["username"], task_id)
+    return delete_task_in_db(user_name, task_id)
 
 
 if __name__ == "__main__":

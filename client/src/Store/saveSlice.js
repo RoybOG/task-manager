@@ -117,6 +117,7 @@ const saveSlice = createSlice({
           action,
           storeActions.insertTask({
             id: action.payload.id,
+            listID: "$#D1!qD2F",
             text: action.payload.text,
           }),
           requestConfig
@@ -133,6 +134,7 @@ const saveSlice = createSlice({
           const newUserAction = new userAction(
             action,
             storeActions.changeTaskPosition({
+              ...action.payload,
               source: action.payload.destination,
               destination: action.payload.source,
             }),

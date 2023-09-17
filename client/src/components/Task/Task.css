@@ -37,7 +37,7 @@ button#submit:hover {
   color: gold;
 }
 
-h3 {
+.Task h3 {
   color: white;
   text-align: center;
   font-weight: 700;
