@@ -21,13 +21,13 @@ function App() {
   const store_Lists = useSelector(SelectAllLists);
   const taskRequestStatus = useSelector(SelectTasksRequestState);
   const dispatch = useDispatch();
-  console.log(JSON.stringify(useSelector((state) => state)));
+  console.log(useSelector((state) => state));
 
   const Lists = () => (
     <>
       {taskRequestStatus == "INITIAL" && Object.keys(store_Lists).length > 0
-        ? Object.entries(store_Lists).map(([listID, l]) => (
-            <TaskList key={listID} {...l} />
+        ? Object.entries(store_Lists).map(([list_id, l], ind) => (
+            <TaskList key={list_id} list_id={list_id} list_index={ind} {...l} />
           ))
         : null}
     </>

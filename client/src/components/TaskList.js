@@ -4,13 +4,13 @@ import { useDispatch, useSelector } from "react-redux";
 import Task from "./Task/Task";
 import { storeActions } from "../Store/taskSlice";
 
-export default function TaskList({ list, list_name, list_id }) {
+export default function TaskList({ list, list_name, list_id, list_index }) {
   const dispatch = useDispatch();
   const handleDragEnd = (DroppedTask) => {
     dispatch(storeActions.changeTaskPosition({ ...DroppedTask, list_id }));
   };
   const handleCreate = () => {
-    dispatch(storeActions.addEmptyTask("$#D1!qD2F"));
+    dispatch(storeActions.addEmptyTask(list_id));
   };
 
   return (
@@ -22,7 +22,7 @@ export default function TaskList({ list, list_name, list_id }) {
             className="tasklist"
             ref={provided.innerRef}
           >
-            <h3>Urgent Tasks</h3>
+            <h3>{list_name ? list_name : `List No' ${list_index + 1}`}</h3>
             <button id="createTask" onClick={handleCreate}>
               +
             </button>

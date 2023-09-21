@@ -77,7 +77,10 @@ const saveSlice = createSlice({
         const requestConfig = {
           method: "post",
           url: "/insert_task",
-          data: { task_id: action.payload.task_id, list_id: "$#D1!qD2F" },
+          data: {
+            task_id: action.payload.task_id,
+            list_id: action.payload.list_id,
+          },
         };
 
         const newUserAction = new userAction(
@@ -117,7 +120,7 @@ const saveSlice = createSlice({
           action,
           storeActions.insertTask({
             task_id: action.payload.task_id,
-            list_id: "$#D1!qD2F",
+            list_id: action.payload.list_id,
             task_text: action.payload.task_text,
           }),
           requestConfig

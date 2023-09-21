@@ -4,7 +4,8 @@ import { sendRequest } from "../communication";
 
 const initialState = {
   status: "INITIAL",
-  lists: { "$#D1!qD2F": { list_name: "A", list: [], list_id: "$#D1!qD2F" } },
+  lists: {},
+  // lists: { "$#D1!qD2F": { list_name: "A", list: [], list_id: "$#D1!qD2F" } },
 };
 
 function removeElementFromArray(arr, ind) {
@@ -96,7 +97,8 @@ const taskSlice = createSlice({
       })
       .addCase(getUserLists.fulfilled, (state, action) => {
         if (action.payload.successful) {
-          console.log(JSON.stringify(action.payload.data.data));
+          console.log(action.payload.data.data);
+          state.lists = action.payload.data.data;
           state.status = "INITIAL";
         } else {
           state.status = "FAILED";

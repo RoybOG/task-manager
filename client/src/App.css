@@ -47,6 +47,8 @@ ul.tasklist {
   list-style-type: none;
   background-color: darkblue;
   display: inline-block;
+  vertical-align: top;
+  margin: 16px 8px;
   padding: 5px;
 }
 ul li {
@@ -54,6 +56,7 @@ ul li {
 }
 ul.tasklist > h3 {
   margin: 0.3em;
+  color: white;
 }
 
 menu {
