@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import "./Task.css";
-import { blank } from "../../constants";
 import { Button } from "@mui/material";
 
 export default function TaskEdit(Task_props) {
-  const [task_text, set_task_text] = useState(Task_props.text || "");
+  const [task_text, set_task_text] = useState(Task_props.task_text || "");
   const change_text = (new_text) => {
     set_task_text(new_text);
   };
@@ -17,7 +16,7 @@ export default function TaskEdit(Task_props) {
   };
 
   useEffect(() => {
-    set_task_text(Task_props.text || "");
+    set_task_text(Task_props.task_text || "");
   }, [Task_props]);
 
   // useEffect(() => {
@@ -30,13 +29,11 @@ export default function TaskEdit(Task_props) {
         onChange={(e) => change_text(e.target.value)}
         // onKeyDown={(e) => handleEnter(e.key)}
         dir={Task_props.dir || "ltr"}
-        value={task_text === blank ? "" : task_text}
+        value={task_text}
         maxLength={500}
         rows={5}
         cols={30}
-      >
-        //this to prevent The blank sign to be visible when ediing an empty task
-      </textarea>
+      ></textarea>
       <br></br>
       <button id="submit" onClick={handleSubmit}>
         submit

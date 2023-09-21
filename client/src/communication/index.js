@@ -14,6 +14,7 @@ const axiosCon = new axios.Axios({
           res = JSON.parse(res);
         } catch (error) {
           console.log(error);
+          return data;
         }
       }
       return res;
@@ -22,8 +23,8 @@ const axiosCon = new axios.Axios({
 });
 // console.log(axiosCon);
 const MAXNUMOFATTEMPTS = 3;
-export const sendRequest = async (requestConfig) => {
-  var result = { successful: true, data: null };
+const sendRequest = async (requestConfig) => {
+  let result = { successful: true, data: null };
   try {
     if (requestConfig.hasOwnProperty("numOfAttempts")) {
       result.data = { data: await axiosCon.request(requestConfig.config) };
@@ -33,7 +34,7 @@ export const sendRequest = async (requestConfig) => {
       return result;
     }
   } catch (err) {
-    //console.log(result);
+    console.log(err);
 
     if (requestConfig.hasOwnProperty("numOfAttempts")) {
       if (requestConfig.numOfAttempts == MAXNUMOFATTEMPTS) {
@@ -52,11 +53,12 @@ export const sendRequest = async (requestConfig) => {
   }
 };
 
+export { sendRequest };
 //export default axiosCon;
 /*
 sendRequest({ method: "get", url: "/get_all_lists" }).then(
   (res) => {
-    console.log(res);
+    console.log(res.data);
   },
   (err) => {
     console.log(err);

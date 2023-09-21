@@ -77,7 +77,7 @@ const saveSlice = createSlice({
         const requestConfig = {
           method: "post",
           url: "/insert_task",
-          data: { task_id: action.payload.id, list_id: "$#D1!qD2F" },
+          data: { task_id: action.payload.task_id, list_id: "$#D1!qD2F" },
         };
 
         const newUserAction = new userAction(
@@ -90,18 +90,18 @@ const saveSlice = createSlice({
       })
 
       .addCase(storeActions.updateTask, (state, action) => {
-        if (action.payload.prevText != action.payload.text) {
+        if (action.payload.prevText != action.payload.task_text) {
           const requestConfig = {
             method: "put",
-            url: "/update_task/" + encodeURI(action.payload.id),
-            data: { task_text: action.payload.text },
+            url: "/update_task/" + encodeURI(action.payload.task_id),
+            data: { task_text: action.payload.task_text },
           };
 
           const newUserAction = new userAction(
             action,
             storeActions.updateTask({
               ...action.payload,
-              text: action.payload.prevText,
+              task_text: action.payload.prevText,
             }),
             requestConfig
           );
@@ -111,14 +111,14 @@ const saveSlice = createSlice({
       .addCase(storeActions.deleteTask, (state, action) => {
         const requestConfig = {
           method: "delete",
-          url: "/delete_task/" + encodeURI(action.payload.id),
+          url: "/delete_task/" + encodeURI(action.payload.task_id),
         };
         const newUserAction = new userAction(
           action,
           storeActions.insertTask({
-            id: action.payload.id,
-            listID: "$#D1!qD2F",
-            text: action.payload.text,
+            task_id: action.payload.task_id,
+            list_id: "$#D1!qD2F",
+            task_text: action.payload.task_text,
           }),
           requestConfig
         );

@@ -4,7 +4,7 @@ import React from "react";
 import { ReactComponent as SpinnerSVG } from "./appImgs/spinner.svg";
 import TaskEdit from "./components/Task/TaskEdit";
 import {
-  SelectAllTasks,
+  SelectAllLists,
   SelectTasksRequestState,
 } from "./Store/storeSelectors";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,17 +15,20 @@ import { storeActions } from "./Store/Store";
 import ActionsBar from "./components/ActionsBar";
 import axiosCon from "./communication";
 import { getUserLists } from "./Store/taskSlice";
+import axios from "axios";
 
 function App() {
-  const store_Lists = useSelector(SelectAllTasks);
+  const store_Lists = useSelector(SelectAllLists);
   const taskRequestStatus = useSelector(SelectTasksRequestState);
   const dispatch = useDispatch();
-  console.log(useSelector((state) => state));
+  console.log(JSON.stringify(useSelector((state) => state)));
 
   const Lists = () => (
     <>
-      {taskRequestStatus == "INITIAL" && store_Lists.length > 0
-        ? store_Lists.map((l) => <TaskList key={l.listID} {...l} />)
+      {taskRequestStatus == "INITIAL" && Object.keys(store_Lists).length > 0
+        ? Object.entries(store_Lists).map(([listID, l]) => (
+            <TaskList key={listID} {...l} />
+          ))
         : null}
     </>
   );
@@ -33,7 +36,7 @@ function App() {
   const Spinner = () => <SpinnerSVG id={"loadingSpinner"} />;
 
   const AppContent = () => {
-    if (taskRequestStatus == "INITIAL" && store_Lists.length > 0) {
+    if (taskRequestStatus == "INITIAL" && Object.keys(store_Lists).length > 0) {
       return <Lists />;
     } else if (taskRequestStatus == "PENDING") {
       return <Spinner />;
@@ -45,6 +48,17 @@ function App() {
   useEffect(() => {
     dispatch(getUserLists());
   }, []);
+  /*
+  useEffect(() => {
+    axios.get("http://localhost:5000/get_all_lists").then(
+      (response) => {
+        console.log(response);
+      },
+      (err) => {
+        console.log(err);
+      }
+    );
+  }, []);*/
 
   return (
     <div className="App">

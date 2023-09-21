@@ -4,7 +4,7 @@ import { sendRequest } from "../communication";
 
 const initialState = {
   status: "INITIAL",
-  lists: [{ listName: "A", list: [], listID: "$#D1!qD2F" }],
+  lists: { "$#D1!qD2F": { list_name: "A", list: [], list_id: "$#D1!qD2F" } },
 };
 
 function removeElementFromArray(arr, ind) {
@@ -22,8 +22,7 @@ function changeElementPosition(proxArr, source, dest) {
 }
 
 function addTaskToList(state, newTask) {
-  const listIND = state.lists.findIndex((l) => l.listID == newTask.listID);
-  state.lists[listIND].list.unshift(newTask);
+  state.lists[newTask.list_id].list.unshift(newTask);
 }
 const shortid = require("shortid");
 
@@ -35,39 +34,32 @@ const reducers = {
     reducer: (state, action) => {
       addTaskToList(state, action.payload);
     },
-    prepare: (listID) => {
+    prepare: (list_id) => {
       return {
-        payload: { id: shortid.generate(), listID },
+        payload: { task_id: shortid.generate(), list_id },
       };
     },
   },
   updateTask: (state, action) => {
     let taskInfo = action.payload;
-    const listIND = state.lists.findIndex((l) => l.listID == taskInfo.listID);
-    if (taskInfo.text.length === 0) taskInfo.text = blank; //This will prevent an unaccebile empty task
-    state.lists[listIND].list[taskInfo.index].text = taskInfo.text;
+    state.lists[taskInfo.list_id].list[taskInfo.index].task_text =
+      taskInfo.task_text;
   },
   deleteTask: (state, action) => {
     console.log(state);
-    const listIND = state.lists.findIndex(
-      (l) => l.listID == action.payload.listID
+    const ind = state.lists[action.payload.list_id].list.findIndex(
+      (t) => t.task_id === action.payload.task_id
     );
-    const ind = state.lists[listIND].list.findIndex(
-      (t) => t.id === action.payload.id
-    );
-    state.lists[listIND].list = removeElementFromArray(
-      state.lists[listIND].list,
+    state.lists[action.payload.list_id].list = removeElementFromArray(
+      state.lists[action.payload.list_id].list,
       ind
     );
   },
   changeTaskPosition: {
     reducer: (state, action) => {
       if (action.payload) {
-        const listIND = state.lists.findIndex(
-          (l) => l.listID == action.payload.listID
-        );
-        state.lists[listIND].list = changeElementPosition(
-          state.lists[listIND].list,
+        state.lists[action.payload.list_id].list = changeElementPosition(
+          state.lists[action.payload.list_id].list,
           action.payload.source,
           action.payload.destination
         );
@@ -78,7 +70,7 @@ const reducers = {
         if (movedTask.source.index !== movedTask.destination.index)
           return {
             payload: {
-              listID: movedTask.listID,
+              list_id: movedTask.list_id,
               source: movedTask.source.index,
               destination: movedTask.destination.index,
             },
@@ -104,6 +96,7 @@ const taskSlice = createSlice({
       })
       .addCase(getUserLists.fulfilled, (state, action) => {
         if (action.payload.successful) {
+          console.log(JSON.stringify(action.payload.data.data));
           state.status = "INITIAL";
         } else {
           state.status = "FAILED";

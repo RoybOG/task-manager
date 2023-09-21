@@ -26,12 +26,10 @@ def print_dict(d):
     print("}")
 
 
-
-
-
 @test_decorator
 def test_log(log_str):
     print(log_str)
+
 
 class SQLDBManager:
     """
@@ -44,7 +42,10 @@ class SQLDBManager:
 
     def __enter__(self):
         self.con = mysql.connector.connect(
-            host="localhost", user="root", password="~&h8BfF2m#$g", database="task_manager_db"
+            host="localhost",
+            user="root",
+            password="~&h8BfF2m#$g",
+            database="task_manager_db",
         )
         self.cursor = self.con.cursor()
         test_log("enter")
@@ -64,7 +65,7 @@ def FetchSqlCommand(sql_code, escape_args=None):
     except (mysql.connector.InterfaceError, mysql.connector.DatabaseError) as e:
         test_log((sql_code, escape_args))
         test_log(e)
-        return SQL_ERROR(message="couldn't connect to database", error_code= 502)
+        return SQL_ERROR(message="couldn't connect to database", error_code=502)
 
     except mysql.connector.Error as e:
         test_log((sql_code, escape_args))
@@ -84,9 +85,9 @@ def runSqlCommand(sql_code, escape_args=None):
     except (mysql.connector.InterfaceError, mysql.connector.DatabaseError) as e:
         test_log((sql_code, escape_args))
         test_log(e)
-        return SQL_ERROR(message="couldn't connect to database", error_code= 502)
+        return SQL_ERROR(message="couldn't connect to database", error_code=502)
 
-    except (mysql.connector.Error) as e:
+    except mysql.connector.Error as e:
         test_log((sql_code, escape_args))
         test_log(e)
         return SQL_ERROR()
@@ -127,6 +128,7 @@ def test_module():
     print("module testing")
     myresult = getAllTasks("itayb")
     print(myresult)
-    print(build_task_list('itaib'))
+    print(build_task_list("itaib"))
+
 
 test_module()

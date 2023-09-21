@@ -3,6 +3,7 @@ import "./Task.css";
 import TaskEdit from "./TaskEdit";
 import { useDispatch } from "react-redux";
 import { storeActions } from "../../Store/taskSlice";
+import { blank } from "../../constants";
 
 function WarningPopOver({ onClickOutside, onClick }) {
   const ref = useRef(null);
@@ -20,7 +21,7 @@ function WarningPopOver({ onClickOutside, onClick }) {
   }, []);
 
   return (
-    <p ref={ref} class="warning">
+    <p ref={ref} className="warning">
       Are you sure you want to delete?
       <button onClick={onClick}>Delete</button>
     </p>
@@ -41,8 +42,8 @@ export default function Task(Task_props) {
     dispatch(
       storeActions.updateTask({
         ...Task_props,
-        prevText: Task_props.text || "",
-        text: userText,
+        prevText: Task_props.task_text || "",
+        task_text: userText,
       })
     );
   };
@@ -56,6 +57,9 @@ export default function Task(Task_props) {
   };
 
   const DisplayTaskText = ({ children }) => {
+    if (!children) {
+      children = blank;
+    }
     if (typeof children === "string") {
       return (
         <div onClick={handleTextClick}>
@@ -74,18 +78,12 @@ export default function Task(Task_props) {
     if (children != null) throw "child is not string!";
   };
 
-  useEffect(() => {
-    if (!Task_props.text) {
-      SetEditing(true);
-    }
-  }, []);
-
   return (
     <div className="Task">
-      <p id="id" class="tooltip">
+      <p id="id" className="tooltip">
         {Task_props.index + 1}
       </p>
-      <p id="delete" class="tooltip" onClick={handleDeleteClick}>
+      <p id="delete" className="tooltip" onClick={handleDeleteClick}>
         <span>X</span>
         {showDeleteWarn && (
           <WarningPopOver
@@ -99,7 +97,7 @@ export default function Task(Task_props) {
       {CanEdit ? (
         <TaskEdit handleSubmit={handleSubmit} {...Task_props} />
       ) : (
-        <DisplayTaskText>{Task_props.text}</DisplayTaskText>
+        <DisplayTaskText>{Task_props.task_text}</DisplayTaskText> //This will prevent an unaccebile empty task
       )}
     </div>
   );

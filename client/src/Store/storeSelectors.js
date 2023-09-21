@@ -1,4 +1,4 @@
-export const SelectAllTasks = (state) => state.tasks.lists;
+export const SelectAllLists = (state) => state.tasks.lists;
 
 export const SelectCanSave = (state) => state.save.presentActionPointer > 0;
 

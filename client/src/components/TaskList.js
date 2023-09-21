@@ -4,10 +4,10 @@ import { useDispatch, useSelector } from "react-redux";
 import Task from "./Task/Task";
 import { storeActions } from "../Store/taskSlice";
 
-export default function TaskList({ list, listName, listID }) {
+export default function TaskList({ list, list_name, list_id }) {
   const dispatch = useDispatch();
   const handleDragEnd = (DroppedTask) => {
-    dispatch(storeActions.changeTaskPosition({ ...DroppedTask, listID }));
+    dispatch(storeActions.changeTaskPosition({ ...DroppedTask, list_id }));
   };
   const handleCreate = () => {
     dispatch(storeActions.addEmptyTask("$#D1!qD2F"));
@@ -30,8 +30,8 @@ export default function TaskList({ list, listName, listID }) {
             {list.map((task_info, index) => {
               return (
                 <Draggable
-                  key={task_info.id}
-                  draggableId={task_info.id}
+                  key={task_info.task_id}
+                  draggableId={task_info.task_id}
                   index={index}
                 >
                   {(provided) => (
@@ -40,7 +40,7 @@ export default function TaskList({ list, listName, listID }) {
                       {...provided.dragHandleProps}
                       ref={provided.innerRef}
                     >
-                      <Task index={index} dir={"rtl"} listID {...task_info} />
+                      <Task index={index} dir={"rtl"} list_id {...task_info} />
                     </li>
                   )}
                 </Draggable>
