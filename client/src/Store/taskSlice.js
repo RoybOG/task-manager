@@ -1,26 +1,13 @@
 import { createSlice, createAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { blank } from "../constants";
 import { sendRequest } from "../communication";
+import { changeElementPosition, removeElementFromArray } from "../helperFuncs";
 
 const initialState = {
   status: "INITIAL",
   lists: {},
   // lists: { "$#D1!qD2F": { list_name: "A", list: [], list_id: "$#D1!qD2F" } },
 };
-
-function removeElementFromArray(arr, ind) {
-  if (ind == undefined || ind === -1) return arr;
-  const arrBefore = arr.slice(0, ind);
-  const arrAfter = arr.slice(ind + 1);
-  return arrBefore.concat(arrAfter);
-}
-
-function changeElementPosition(proxArr, source, dest) {
-  let arr = Array.from(proxArr);
-  const [movedEl] = arr.splice(source, 1);
-  arr.splice(dest, 0, movedEl);
-  return arr;
-}
 
 function addTaskToList(state, newTask) {
   state.lists[newTask.list_id].list.unshift(newTask);

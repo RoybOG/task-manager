@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { storeActions } from "./taskSlice";
+import { sendRequest } from "../communication";
 
 const initialState = {
   presentActionPointer: 0,
@@ -57,6 +58,7 @@ const saveSlice = createSlice({
      * Will save all the done actions to the db and remove them from history
      * @param {*} state
      */
+    /*
     save: (state) => {
       if (state.actionsHistory.length > 1) {
         //Becuase we have the null action that nothing happend yet already in the history
@@ -67,7 +69,7 @@ const saveSlice = createSlice({
 
         state.presentActionPointer = 0;
       }
-    },
+    },*/
   },
   extraReducers: (builder) => {
     builder
@@ -161,7 +163,7 @@ const saveSlice = createSlice({
 
 // Actions
 
-export const { save } = saveSlice.actions;
+//export const { save } = saveSlice.actions;
 
 export const redo = createAsyncThunk(
   "redo",
@@ -187,6 +189,25 @@ export const undo = createAsyncThunk(
       await currentState.save.actionsHistory[
         currentState.save.presentActionPointer
       ].undoAction(dispatch);
+    }
+  }
+);
+
+export const save = createAsyncThunk(
+  "save",
+  async (_, { dispatch, getState }) => {
+    if (state.actionsHistory.length > 1) {
+      const currentState = getState();
+      console.log(currentState);
+      for (i = 1; i <= currentState.save.presentActionPointer; i++) {
+        try {
+          res = await sendRequest(
+            currentState.save.actionsHistory[i].userActionRequest
+          );
+        } catch (err) {}
+        currentState.save.presentActionPointer =
+          currentState.save.presentActionPointer - 1;
+      }
     }
   }
 );
