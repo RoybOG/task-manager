@@ -7,7 +7,7 @@ from datetime import timedelta
 from sqlalchemy.inspection import inspect as table_inspect
 from sqlalchemy.exc import SQLAlchemyError
 
-SQL_ERROR = lambda message="failed", error_code=500: (message, error_code)
+SQL_ERROR = lambda message="failed", error_code=503: (message, error_code)
 
 RUN_TESTS = True
 
@@ -23,6 +23,7 @@ def db_operation_func(func):
         try:
             return func(*args, **kargs)
         except (SQLAlchemyError, ConnectionError):
+            print('sql error')
             return SQL_ERROR()
 
     return inner
@@ -266,8 +267,11 @@ def create_new_list(user_id, **extra_args):
 @db_operation_func
 def add_new_task(user_id, **extra_args):
     with app.app_context():
-        list_obj = get_list_obj(user_id, extra_args["list_id"])
+        if get_task_obj(user_id, extra_args["task_id"]):
+            return "You're trying to create a task that exists already", 400
 
+        list_obj = get_list_obj(user_id, extra_args["list_id"])
+        print(extra_args["list_id"])
         if list_obj:
             new_task_obj = Task(
                 user_id=user_id,

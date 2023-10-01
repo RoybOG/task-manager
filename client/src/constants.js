@@ -1,3 +1,3 @@
 const blank = "_";
-
-export { blank };
+const okStatuses = [200, 201];
+export { blank, okStatuses };

@@ -1,9 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { storeActions } from "./taskSlice";
 import { sendRequest } from "../communication";
+import { removeElementFromArray } from "../helperFuncs";
 
 const initialState = {
   presentActionPointer: 0,
+  saveStatus: "INITIAL",
   actionsHistory: [null], //This stores the history of the user's actions.  The first null elements indicates the initial state, before any of the user's actions, when there was no actions.
 };
 console.log(storeActions);
@@ -78,7 +80,7 @@ const saveSlice = createSlice({
         console.log(state);
         const requestConfig = {
           method: "post",
-          url: "/insert_task",
+          url: "/create_task",
           data: {
             task_id: action.payload.task_id,
             list_id: action.payload.list_id,
@@ -130,18 +132,22 @@ const saveSlice = createSlice({
         addUserAction(state, newUserAction);
       })
       .addCase(storeActions.changeTaskPosition, (state, action) => {
+        console.log(state.lists);
         const requestConfig = {
           method: "put",
           url: "/move_task",
-          params: action.payload,
+          params: {
+            source: action.payload.source.task_id,
+            destination: action.payload.destination.task_id,
+          },
         };
         if (action.payload) {
           const newUserAction = new userAction(
             action,
             storeActions.changeTaskPosition({
               ...action.payload,
-              source: action.payload.destination,
-              destination: action.payload.source,
+              source: action.payload.destination.task_id,
+              destination: action.payload.source.task_id,
             }),
             requestConfig
           );
@@ -157,6 +163,18 @@ const saveSlice = createSlice({
         if (state.presentActionPointer < state.actionsHistory.length - 1) {
           state.presentActionPointer += 1;
         }
+      })
+      .addCase(save.pending, (state, action) => {
+        state.saveStatus = "PENDING";
+        console.log(action);
+      })
+      .addCase(save.fulfilled, (state, action) => {
+        if (action.payload) {
+          console.log(action);
+          state.presentActionPointer -= action.payload;
+          state.actionsHistory.splice(1, action.payload);
+        }
+        state.saveStatus = "INITIAL";
       });
   },
 });
@@ -196,19 +214,34 @@ export const undo = createAsyncThunk(
 export const save = createAsyncThunk(
   "save",
   async (_, { dispatch, getState }) => {
-    if (state.actionsHistory.length > 1) {
-      const currentState = getState();
-      console.log(currentState);
-      for (i = 1; i <= currentState.save.presentActionPointer; i++) {
+    const { save: currentState } = getState();
+    console.log(currentState);
+    let i = 1;
+    if (currentState.actionsHistory.length > 1) {
+      for (i = 1; i <= currentState.presentActionPointer; i++) {
         try {
-          res = await sendRequest(
-            currentState.save.actionsHistory[i].userActionRequest
+          let res = await sendRequest(
+            currentState.actionsHistory[i].userActionRequest
           );
-        } catch (err) {}
-        currentState.save.presentActionPointer =
-          currentState.save.presentActionPointer - 1;
+          console.log(res);
+          if (!res.successful) {
+            throw "request not successful";
+          }
+          // currentState.actionsHistory = removeElementFromArray(
+          //   currentState.actionsHistory,
+          //   i
+          // );
+
+          // currentState.presentActionPointer =
+          //   currentState.presentActionPointer - 1;
+        } catch (err) {
+          alert("Counldn't save all your changes, try saving again later!");
+          console.log(err);
+          break;
+        }
       }
     }
+    return i - 1;
   }
 );
 

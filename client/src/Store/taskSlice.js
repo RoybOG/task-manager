@@ -48,8 +48,8 @@ const reducers = {
       if (action.payload) {
         state.lists[action.payload.list_id].list = changeElementPosition(
           state.lists[action.payload.list_id].list,
-          action.payload.source,
-          action.payload.destination
+          action.payload.source.index,
+          action.payload.destination.index
         );
       }
     },
@@ -59,8 +59,8 @@ const reducers = {
           return {
             payload: {
               list_id: movedTask.list_id,
-              source: movedTask.source.index,
-              destination: movedTask.destination.index,
+              source: movedTask.source,
+              destination: movedTask.destination,
             },
           };
       return { payload: null };

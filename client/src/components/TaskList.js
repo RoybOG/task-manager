@@ -7,6 +7,9 @@ import { storeActions } from "../Store/taskSlice";
 export default function TaskList({ list, list_name, list_id, list_index }) {
   const dispatch = useDispatch();
   const handleDragEnd = (DroppedTask) => {
+    DroppedTask.source.task_id = list[DroppedTask.source.index].task_id;
+    DroppedTask.destination.task_id =
+      list[DroppedTask.destination.index].task_id;
     dispatch(storeActions.changeTaskPosition({ ...DroppedTask, list_id }));
   };
   const handleCreate = () => {

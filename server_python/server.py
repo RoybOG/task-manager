@@ -46,7 +46,7 @@ def check_args(user_args_dict, required_params=None):
 
 def send_response(data, status_code=200):
     response_obj = jsonify(data)
-    response_obj.headers.set("Access-Control-Allow-Origin", "http://localhost:3000")
+
     return response_obj, status_code
 
 
@@ -72,6 +72,17 @@ def enter_website():
 
     return "<h1>Hello, World!</h1>"
 """
+
+
+@app.after_request
+def after_request(response):
+    print(request.data)
+    print(response)
+    response.headers.add('Access-Control-Allow-Origin', 'http://localhost:3000')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
 
 
 @app.get("/get_list/<list_id>")
@@ -110,6 +121,7 @@ def send_user_lists():
 
 @app.post("/create_list")
 def post_list():
+    print('a')
     new_task_args = request.get_json()
     print_dict(new_task_args)
     new_task_args, status_code = check_args(new_task_args, ["list_id"])
@@ -122,13 +134,14 @@ def post_list():
 @app.post("/create_task")
 def post_task():
     new_task_args = request.get_json()
+    print('a')
     print_dict(new_task_args)
     res, status_code = check_args(new_task_args, ["task_id", "list_id"])
 
     if status_code == 200:
         res, status_code = add_new_task(user_name, **res)
 
-    return send_response(res, status_code)
+    return send_response({"res":res}, status_code)
 
 
 @app.put("/update_task/<task_id>")
