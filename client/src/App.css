@@ -84,8 +84,8 @@ menu button svg {
 }
 
 svg#loadingSpinner {
-  width: 10em;
-  height: 10em;
+  /* width: 10em;
+  height: 10em; */
   animation: spinEL 1s infinite;
 }
 

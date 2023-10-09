@@ -7,12 +7,16 @@ import {
   SelectCanRedo,
   SelectCanSave,
   SelectCanUndo,
+  SelectIsSaving,
 } from "../Store/storeSelectors";
+import Spinner from "./Spinner";
+
 export default function ActionsBar({ props }) {
   const dispatch = useDispatch();
   const canSave = useSelector(SelectCanSave);
   const canUndo = useSelector(SelectCanUndo);
   const canRedo = useSelector(SelectCanRedo);
+  const isSaving = useSelector(SelectIsSaving);
   const handleUndo = () => {
     dispatch(undo());
   };
@@ -23,14 +27,30 @@ export default function ActionsBar({ props }) {
     dispatch(save());
     //console.log("save");
   };
+
+  const SaveButton = () => {
+    if (isSaving) {
+      return (
+        <button
+          disabled
+          style={{ backgroundColor: "white", padding: "0px 4px 1px" }}
+        >
+          <Spinner size={"1em"} />
+        </button>
+      );
+    }
+    return (
+      <button id="save" disabled={!canSave} onClick={handleSave}>
+        <SaveIcon />
+      </button>
+    );
+  };
   return (
     <menu>
       <button disabled={!canUndo} onClick={handleUndo}>
         <RightArrowIcon />
       </button>
-      <button id="save" disabled={!canSave} onClick={handleSave}>
-        <SaveIcon />
-      </button>
+      <SaveButton />
       <button disabled={!canRedo} onClick={handleRedo}>
         <RightArrowIcon />
       </button>

@@ -16,6 +16,7 @@ import ActionsBar from "./components/ActionsBar";
 import axiosCon from "./communication";
 import { getUserLists } from "./Store/taskSlice";
 import axios from "axios";
+import Spinner from "./components/Spinner";
 
 function App() {
   const store_Lists = useSelector(SelectAllLists);
@@ -32,8 +33,6 @@ function App() {
         : null}
     </>
   );
-
-  const Spinner = () => <SpinnerSVG id={"loadingSpinner"} />;
 
   const AppContent = () => {
     if (taskRequestStatus == "INITIAL" && Object.keys(store_Lists).length > 0) {
@@ -64,8 +63,10 @@ function App() {
     <div className="App">
       <h1>ProductiveDay</h1>
       <h2>Today will be a productive day!</h2>
-      <ActionsBar />
-      <AppContent />
+      <main id="task-managing">
+        <ActionsBar />
+        <AppContent />
+      </main>
     </div>
   );
 }

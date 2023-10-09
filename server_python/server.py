@@ -167,6 +167,7 @@ def change_task_priority():
 
 @app.delete("/delete_task/<task_id>")
 def delete_task(task_id):
+    print(task_id)
     res, status_code = delete_task_in_db(user_name, task_id)
     return send_response(res, status_code)
 

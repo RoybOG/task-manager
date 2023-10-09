@@ -18,12 +18,14 @@ console.log(storeActions);
  * @param {userAction} newUserAction
  */
 function addUserAction(state, newUserAction) {
-  state.actionsHistory = state.actionsHistory.slice(
-    0,
-    state.presentActionPointer + 1
-  );
-  state.presentActionPointer += 1;
-  state.actionsHistory.push(newUserAction);
+  if (state.saveStatus != "PENDING") {
+    state.actionsHistory = state.actionsHistory.slice(
+      0,
+      state.presentActionPointer + 1
+    );
+    state.presentActionPointer += 1;
+    state.actionsHistory.push(newUserAction);
+  }
 }
 
 class userAction {
@@ -118,7 +120,7 @@ const saveSlice = createSlice({
       .addCase(storeActions.deleteTask, (state, action) => {
         const requestConfig = {
           method: "delete",
-          url: "/delete_task/" + encodeURI(action.payload.task_id),
+          url: "/delete_task/" + encodeURIComponent(action.payload.task_id),
         };
         const newUserAction = new userAction(
           action,
@@ -132,16 +134,17 @@ const saveSlice = createSlice({
         addUserAction(state, newUserAction);
       })
       .addCase(storeActions.changeTaskPosition, (state, action) => {
-        console.log(state.lists);
-        const requestConfig = {
-          method: "put",
-          url: "/move_task",
-          params: {
-            source: action.payload.source.task_id,
-            destination: action.payload.destination.task_id,
-          },
-        };
         if (action.payload) {
+          console.log(state.lists);
+          const requestConfig = {
+            method: "put",
+            url: "/move_task",
+            params: {
+              source: action.payload.source.task_id,
+              destination: action.payload.destination.task_id,
+            },
+          };
+
           const newUserAction = new userAction(
             action,
             storeActions.changeTaskPosition({
@@ -165,6 +168,7 @@ const saveSlice = createSlice({
         }
       })
       .addCase(save.pending, (state, action) => {
+        document.getElementById("task-managing").style.pointerEvents = "none"; //This will make sure users won't change tasks while loading!
         state.saveStatus = "PENDING";
         console.log(action);
       })
@@ -175,6 +179,7 @@ const saveSlice = createSlice({
           state.actionsHistory.splice(1, action.payload);
         }
         state.saveStatus = "INITIAL";
+        document.getElementById("task-managing").style.pointerEvents = "";
       });
   },
 });
@@ -189,7 +194,8 @@ export const redo = createAsyncThunk(
     const currentState = getState();
     if (
       currentState.save.presentActionPointer <
-      currentState.save.actionsHistory.length - 1
+        currentState.save.actionsHistory.length - 1 &&
+      currentState.save.saveStatus != "PENDING"
     ) {
       await currentState.save.actionsHistory[
         currentState.save.presentActionPointer + 1 //Redo the last action that was undone
@@ -203,7 +209,10 @@ export const undo = createAsyncThunk(
   async (_, { dispatch, getState }) => {
     const currentState = getState();
     console.log(currentState);
-    if (currentState.save.presentActionPointer > 0) {
+    if (
+      currentState.save.presentActionPointer > 0 &&
+      currentState.save.saveStatus != "PENDING"
+    ) {
       await currentState.save.actionsHistory[
         currentState.save.presentActionPointer
       ].undoAction(dispatch);
